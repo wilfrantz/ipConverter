@@ -1,18 +1,22 @@
-IPConverter : Design 
+# IPConverter : Design 
 
-Introduction
+#### Introduction
 
 The IPConverter program is a software application designed to provide users with a variety of tools and features related to IP addresses. The program will be built mainly in C++, with additional libraries and tools used as necessary to provide the required functionality.
 
-Features
+#### Features
 
-IP address converter: A tool that allows users to convert between different IP address formats, such as converting between IPv4 and IPv6.
+* IP address converter: 
+  A tool that allows users to convert between different IP address formats, such as converting between IPv4 and IPv6.
 
-Geolocation lookup: A tool that allows users to enter an IP address and see the location associated with that IP, including the country, city, and geographic coordinates.
+* Geolocation lookup: 
+  A tool that allows users to enter an IP address and see the location associated with that IP, including the country, city, and geographic coordinates.
 
-Reverse DNS lookup: A tool that allows users to enter an IP address and see the domain name associated with that IP, as well as any other domains that resolve to that IP.
+* Reverse DNS lookup: 
+  A tool that allows users to enter an IP address and see the domain name associated with that IP, as well as any other domains that resolve to that IP.
 
-IP address range calculator: A tool that allows users to enter an IP address and a subnet mask and calculates the range of IP addresses that fall within that subnet.
+* IP address range calculator: 
+  A tool that allows users to enter an IP address and a subnet mask and calculates the range of IP addresses that fall within that subnet.
 
 CIDR calculator: A tool that allows users to enter a range of IP addresses and calculates the CIDR notation for that range.
 
