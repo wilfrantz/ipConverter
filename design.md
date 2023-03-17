@@ -1,11 +1,11 @@
 # IPConverter : Design 
 
 #### Introduction
-======================================================================================================================
+===========================================================================
 The IPConverter program is a software application designed to provide users with a variety of tools and features related to IP addresses. The program will be built mainly in C++, with additional libraries and tools used as necessary to provide the required functionality.
 
 #### Features
-======================================================================================================================
+===========================================================================
 * **IP address converter**: 
   A tool that allows users to convert between different IP address formats, such as converting between IPv4 and IPv6.
 
@@ -79,7 +79,7 @@ The IPConverter program is a software application designed to provide users with
   The ability to look up the MAC address associated with an IP address.
 
 #### Architecture
-======================================================================================================================
+===========================================================================
                 +------------------+
                 |   IPConverter    |
                 +------------------+
@@ -162,9 +162,9 @@ The IPConverter program will be built in C++ using an object-oriented design pat
   A class that provides methods for performing a Whois lookup on an IP address or domain name.
 
 #### API Integration
-======================================================================================================================
+===========================================================================
 The IPConverter program will provide an API that other developers can use to access its features and functionality. The API will be designed using RESTful principles and will allow developers to perform various operations related to IP addresses, including IP address conversion, geolocation lookup, DNS lookup, and more.
 
 #### Conclusion
-======================================================================================================================
+===========================================================================
 The IPConverter program will be a versatile and powerful tool for working with IP addresses. Its wide range of features and tools will make it useful for developers, network administrators, and anyone else who needs to work with IP addresses on a regular basis. Its object-oriented design and API integration will make it easy to use and integrate with other software applications.

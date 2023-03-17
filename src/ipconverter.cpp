@@ -2,20 +2,20 @@
 
 namespace ipconverter {
 
-IPConverter::IPConverter() {}
-IPConverter::~IPConverter() {}
+// IPConverter::IPConverter() {}
+// IPConverter::~IPConverter() {}
 
 // NOTE: Methods for handling user input and output.
 void IPConverter::readUserInput() {
     std::cout << "Enter an IP address or domain name: ";
-    std::cin >> _ipAddress;
+    std::cin >> this->_ipAddress;
 }
 
 void IPConverter::displayResults() {
-    std::cout << "IP address: " << _ipAddress << std::endl;
+    std::cout << "IP address: " << this->_ipAddress << std::endl;
 }
 
-/// NOTE: Other methods for coordinating the interactions between other
+/// TODO: Other methods for coordinating the interactions between other
 /// classes.
 void IPConverter::convertIPAddress() {}
 void IPConverter::performGeolocationLookup() {}

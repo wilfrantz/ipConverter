@@ -12,7 +12,7 @@ namespace ipconverter {
    class IPConverter {
       public:
          IPConverter() {}
-         ~IPConverter() {}
+         ~IPConverter() = default;
 
          // NOTE: Methods for handling user input and output.
          void readUserInput();
@@ -45,6 +45,8 @@ namespace ipconverter {
          std::string _domainName;
          int _portNumber;
          bool _isIPAddress;
+
+   friend class IPConverterTest;
    };
 
 }  // end namespace ipconverter
