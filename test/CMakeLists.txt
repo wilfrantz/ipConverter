@@ -28,8 +28,8 @@ INCLUDE_DIRECTORIES(BEFORE
 ADD_EXECUTABLE(${PROJECT_NAME}
         gtest_main.cpp
         ../src/ipconverter.cpp
-        src/ipconverMock.cpp
-        src/UTipConverter.cpp
+        src/ipconverter_mock.cpp
+        src/ut_ipconverter.cpp
         )
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}

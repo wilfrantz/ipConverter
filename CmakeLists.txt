@@ -13,11 +13,12 @@ ADD_EXECUTABLE("${PROJECT_NAME}"
 
  TARGET_LINK_LIBRARIES("${PROJECT_NAME}" 
                     curl
+                    jsoncpp
  )
 
-IF (BUILD_TESTS)
-    MESSAGE(STATUS "Building tests")
+IF (BUILD_TEST)
+    MESSAGE(STATUS "Building tests...")
     ENABLE_TESTING()
     ADD_SUBDIRECTORY(test)
     ADD_TEST(NAME ${PROJECT_NAME}_test COMMAND ${PROJECT_NAME}_test)
-ENDIF (BUILD_TESTS)
+ENDIF (BUILD_TEST)
