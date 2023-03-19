@@ -1,0 +1,52 @@
+{
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ipAddress": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "subnetMask": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "startingIPAddress": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "endingIPAddress": {
+            "type": "string",
+            "format": "ipv4"
+          },
+          "domainName": {
+            "type": "string"
+          },
+          "portNumber": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "isIPAddress": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ipAddress",
+          "subnetMask",
+          "startingIPAddress",
+          "endingIPAddress",
+          "domainName",
+          "portNumber",
+          "isIPAddress"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["data"],
+  "additionalProperties": false
+}

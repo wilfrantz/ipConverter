@@ -1,0 +1,14 @@
+{
+  "query": "0001",
+  "data": [
+    {
+      "ipAddress": "192.168.1.1",
+      "subnetMask": "255.255.255.0",
+      "startingIPAddress": "192.168.1.100",
+      "endingIPAddress": "192.168.1.200",
+      "domainName": "example.com",
+      "portNumber": 8080,
+      "isIPAddress": false
+    }
+  ]
+}
