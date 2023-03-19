@@ -7,7 +7,7 @@ namespace ipconverter
     public:
         IpConverterMock();
 
-        void readUserInputMock();
+        void readUserInputMock(const char* jsonFile);
         void displayResultsMock();
 
         ~IpConverterMock() = default;

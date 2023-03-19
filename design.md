@@ -1,10 +1,10 @@
 # IPConverter : Design 
 
-#### Introduction
+#### **Introduction**
 ===========================================================================
 The IPConverter program is a software application designed to provide users with a variety of tools and features related to IP addresses. The program will be built mainly in C++, with additional libraries and tools used as necessary to provide the required functionality.
 
-#### Features
+#### **Features**
 ===========================================================================
 * **IP address converter**: 
   A tool that allows users to convert between different IP address formats, such as converting between IPv4 and IPv6.

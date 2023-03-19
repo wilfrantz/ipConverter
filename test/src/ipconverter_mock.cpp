@@ -4,7 +4,7 @@ namespace ipconverter
 {
     IpConverterMock::IpConverterMock() {}
 
-    void IpConverterMock::readUserInputMock() { IPConverter::readUserInput(); }
+    void IpConverterMock::readUserInputMock(const char* jsonFile) { IPConverter::readUserInput(jsonFile); }
 
     void IpConverterMock::displayResultsMock() { IPConverter::displayResults(); }
 } // namespace ipconverter

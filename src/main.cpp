@@ -1,9 +1,20 @@
+#include <fstream>
+#include <iostream>
 #include "ipconverter.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-    ipconverter::IPConverter ipConverter;
-    ipConverter.readUserInput();
-    ipConverter.displayResults();
+    if (argc == 1)
+    {
+        ipconverter::IPConverter ipConverter;
+        ipConverter.readUserInput(std::cin);
+        ipConverter.displayResults();
+    }
+    else
+    {
+        std::cout << "Usage: " << argv[0] << std::endl;
+        return 1;
+    }
+
     return 0;
 }

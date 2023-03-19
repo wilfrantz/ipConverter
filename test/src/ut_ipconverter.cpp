@@ -10,9 +10,10 @@
 
 TEST(UTipConverter, readUserInputMock)
 {
+    const char *jsonFile = "test.json";
     std::string ipAddress = "dede";
     ipconverter::IpConverterMock ipConverterMock;
-    ipConverterMock.readUserInputMock();
+    ipConverterMock.readUserInputMock(jsonFile);
 
     // EXPECT_STREQ(ipConverterMock._ipAddress, ipAddress);
 }

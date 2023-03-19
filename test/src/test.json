@@ -1,0 +1,29 @@
+
+[
+  {
+    "uid": "0001",
+    "operation": "IP_ADDRESS_CONVERSION",
+    "data": [
+      {
+        "type": "IPv4",
+        "ipAddr": "192.168.1.1"
+      }
+    ]
+  },
+  {
+    "uid": "0002",
+    "metricType": "GEOLOCATION_LOOKUP",
+    "data": [
+      {
+        "ipAddrv4": "10.0.0.1",
+        "type": "IPv4",
+        "subnetMask": "255.0.0.0",
+        "startingIPAddress": "10.0.0.10",
+        "endingIPAddress": "10.0.0.20",
+        "domainName": "example.org",
+        "portNumber": 80,
+        "isIPAddress": true
+      }
+    ]
+  }
+]
