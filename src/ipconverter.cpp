@@ -7,11 +7,12 @@
 namespace ipconverter
 {
 
-    /// This method handles data input from CIN
+    /// This method loads data from stdin
     ///\param[in] input - std::istream object: input stream.
     ///\return none.
     void IPConverter::readUserInput(std::istream &input)
     {
+        spdlog::info("[readUserInput()]: Loading data from stdin.");
         Json::Value root;
         input >> root;
 
@@ -78,20 +79,20 @@ namespace ipconverter
                 supportCIDRNotation();
                 break;
             default:
-                std::cout << "Invalid operation type." << operation << std::endl;
+                spdlog::error("Invalid operation type: {}", operation);
                 break;
             }
         }
     }
 
-    void IPConverter::displayResults()
-    {
-    }
     void IPConverter::addToResults() {}
+
+    void IPConverter::displayResults(){}
+
 
     void IPConverter::convertIPAddress(Json::Value root)
     {
-        IPAddressConverter converter;
+        spdlog::info("[convertIPAddress]: {}.", root["operation"].asString());
         const unsigned int dataSize = root["data"].size();
         for (unsigned int index = 0; index < dataSize; ++index)
         {
@@ -102,7 +103,7 @@ namespace ipconverter
             const std::string &binary(root["data"][index].get("binary", "").asString());
             const std::string &reverseDns(root["data"][index].get("reverseDns", "").asString());
 
-            converter.loadData(ipAddress, version, ipClass, reverseDns, binary);
+            IPAddressConverter converter(ipAddress, version, ipClass, reverseDns, binary);
         }
     }
 

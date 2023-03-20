@@ -9,12 +9,6 @@
 #endif
 
 #ifdef __APPLE__
-#include <unistd.h>
-#include <filesystem>
-#include <curl/curl.h>
-#include </usr/local/Cellar/jsoncpp/1.9.5/include/json/json.h>
-#include </usr/local/Cellar/jsoncpp/1.9.5/include/json/reader.h>
-// #include </usr/local/Cellar/spdlog/1.11.0/include/spdlog/spdlog.h>
 
 #else
 
@@ -32,8 +26,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <algorithm>
 #include <sstream>
+#include <unistd.h>
 #include <iostream>
+#include <algorithm>
+#include <filesystem>
+#include <curl/curl.h>
+#include <json/json.h>
+#include <json/reader.h>
+#include <boost/asio.hpp>
+#include <spdlog/spdlog.h>
 
 #endif
