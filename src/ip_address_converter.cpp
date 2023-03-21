@@ -28,6 +28,9 @@ namespace ipconverter
         convert();
     }
 
+    /// @brief I am no longer sure about this function, will rework entirely.
+    /// @param none
+    /// @return none
     void IPAddressConverter::convert()
     {
         boost::asio::io_service io_service;
@@ -92,7 +95,7 @@ namespace ipconverter
             // Log error and exit if necessary
         }
 
-        // 93.184.216.34
+        /// TODO: WIll improve this later
         getIpAttributes(_ipAddr);
 
         /// TODO: Remove these spdlog::info() calls
@@ -105,18 +108,27 @@ namespace ipconverter
         spdlog::info("IP Address Reverse DNS: {}", ip._reverseDnsLookup);
     }
 
+    /// @brief Check if the input string is a valid binary IP address
+    /// @param inputString
+    /// @return true if the input string is a valid binary IP address, false otherwise
     bool IPAddressConverter::isBinary(const std::string &inputString)
     {
         static const std::regex binaryRegex(R"(^(?:[01]{8}\.){3}[01]{8}$)");
         return std::regex_match(inputString, binaryRegex);
     }
 
+    /// @brief Check if the input string is a valid domain name
+    /// @param inputString
+    /// @return true if the input string is a valid domain name, false otherwise
     bool IPAddressConverter::isValidDomainName(const std::string &inputString)
     {
         static const std::regex domainNameRegex(R"(^(?=.{1,255}$)([a-zA-Z0-9][a-zA-Z0-9_-]{0,62}[a-zA-Z0-9]\.?)+[a-zA-Z]{2,}$)");
         return std::regex_match(inputString, domainNameRegex);
     }
 
+    /// @brief get the binary representation of an IP address
+    /// @param IP address
+    /// @return binary representation of the IP address
     std::string IPAddressConverter::getBinaryRepresentation(const boost::asio::ip::address &address)
     {
         if (address.is_v4())
@@ -132,6 +144,9 @@ namespace ipconverter
         }
     }
 
+    /// @brief Get the class attribute of the IP address
+    /// @param IP address
+    /// @return class aatribute
     std::string IPAddressConverter::getClass(const boost::asio::ip::address &address)
     {
         if (address.is_v4())
@@ -164,6 +179,10 @@ namespace ipconverter
         }
     }
 
+    /// TODO:
+    /// @brief Convert  IP adrress to domain name
+    /// @param IP address
+    /// @return domain name
     std::string IPAddressConverter::reverseDnsLookup(const boost::asio::ip::address &address)
     {
         boost::asio::io_context io_context;
@@ -181,6 +200,9 @@ namespace ipconverter
         }
     }
 
+    /// @brief Get IP attributes
+    /// @param ip_str IP address in string format.
+    /// @return none.
     void IPAddressConverter::getIpAttributes(const std::string &ip_str)
     {
         boost::system::error_code ec;
@@ -205,9 +227,6 @@ namespace ipconverter
         std::string binary_repr = getBinaryRepresentation(address);
         std::string reverse_dns = reverseDnsLookup(address);
 
-        // std::cout << "IP address: " << ip_str << std::endl;
-        // std::cout << "Version: " << version << std::endl;
-
         if (!ip_class.empty())
             ip._class = ip_class;
 
@@ -218,11 +237,17 @@ namespace ipconverter
         ip._reverseDnsLookup = reverse_dns;
     }
 
+    /// @brief  Converts an IPv4 address to an IPv6-mapped address
+    /// @param ipv4_address The IPv4 address to convert
+    /// @return The IPv6-mapped address
     address_v6 IPAddressConverter::convertToIPv6Mapped(const address_v4 &ipv4_address)
     {
         return boost::asio::ip::address_v6::v4_mapped(ipv4_address);
     }
 
+    /// @brief Converts an IPv6-mapped address to an IPv4 address
+    /// @param ipv6_address The IPv6-mapped address to convert
+    /// @return The IPv4 address
     address_v4 IPAddressConverter::convertToIPv4(const address_v6 &ipv6_address)
     {
         if (ipv6_address.is_v4_mapped())
@@ -235,6 +260,9 @@ namespace ipconverter
         }
     }
 
+    /// @brief Converts a domain name to an IP address
+    /// @param hostname The domain name to convert
+    /// @return A vector of IP addresses
     std::vector<std::string> IPAddressConverter::convertToIPAddress(const std::string &hostname)
     {
         if (isValidDomainName(hostname))
