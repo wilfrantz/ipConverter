@@ -20,8 +20,8 @@ ADD_COMPILE_DEFINITIONS(ENGINE_VERSION="${PROJECT_VERSION}")
 
 ADD_EXECUTABLE("${PROJECT_NAME}"
   src/main.cpp
-  src/ipconverter.cpp
-  src/convert_address.cpp
+  src/ip_converter.cpp
+  src/ip_address_converter.cpp
 )
 
 TARGET_LINK_LIBRARIES("${PROJECT_NAME}"

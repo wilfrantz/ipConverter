@@ -5,7 +5,7 @@
  * Description: Command-line interface for the IPConverter.com web app
  * ************************************************************/
 
-#include "ipconverter.h"
+#include "ip_converter.h"
 
 int main(int argc, char *argv[])
 {
