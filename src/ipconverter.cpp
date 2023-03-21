@@ -16,7 +16,7 @@ namespace ipconverter
         Json::Value root;
         input >> root;
 
-        // Iterate through root array. filter by operation.
+        // Iterate through root array to filter by operation.
         for (unsigned int index = 0; index < root.size(); index++)
         {
             const std::string &uid(root[index].get("uid", "").asString());
