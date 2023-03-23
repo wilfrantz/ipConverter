@@ -44,7 +44,7 @@ To run the IPConverter program, navigate to the build directory and run the foll
 
 Once the program is running, follow the on-screen instructions to use the different tools and features provided.
 
-****Caution: Work in progress - documentation may not be current.****
+**** Caution: Work in progress - documentation may not be current. ****
 
 ### Contributing
 

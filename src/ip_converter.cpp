@@ -25,7 +25,7 @@ namespace ipconverter
             switch (metricTypeMap[operation])
             {
             case metricType::IP_ADDRESS_CONVERSION:
-                convertIPAddress(root[index]);
+                convertIPAddress(uid, root[index]);
                 break;
             case metricType::DOMAIN_NAME:
                 performDNSLookup();
@@ -43,7 +43,7 @@ namespace ipconverter
                 convertIPType();
                 break;
             case metricType::IP_VERSION:
-                convertIPAddress(root[index]);
+                convertIPAddress(uid, root[index]);
                 break;
             case metricType::IP_CLASS:
                 identifyNetworkClass();
@@ -89,21 +89,20 @@ namespace ipconverter
 
     void IPConverter::displayResults(){}
 
-
-    void IPConverter::convertIPAddress(Json::Value root)
+    void IPConverter::convertIPAddress(const std::string &uid, Json::Value root)
     {
         spdlog::info("[Operation]: {}.", root["operation"].asString());
         const unsigned int dataSize = root["data"].size();
         for (unsigned int index = 0; index < dataSize; ++index)
         {
-            const std::string &version(root["data"][index]["version"].asString());
             const std::string &ipAddress(root["data"][index]["ip_address"].asString());
             // Optional fields.
             const std::string &ipClass(root["data"][index].get("class", "").asString());
             const std::string &binary(root["data"][index].get("binary", "").asString());
+            const std::string &version(root["data"][index].get("version", "").asString());
             const std::string &reverseDns(root["data"][index].get("reverseDns", "").asString());
 
-            IPAddressConverter converter(ipAddress, version, ipClass, reverseDns, binary);
+            IPAddressConverter converter(uid, ipAddress, version, ipClass, reverseDns, binary);
         }
     }
 

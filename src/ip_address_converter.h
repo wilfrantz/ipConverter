@@ -20,7 +20,8 @@ namespace ipconverter
     {
     public:
         IPAddressConverter();
-        IPAddressConverter(const std::string &ipAddr,
+        IPAddressConverter(const std::string &uid,
+                           const std::string &ipAddr,
                            const std::string &ipVersion,
                            const std::string &ipClass = "",
                            const std::string &reverseDnsLookup = "",
@@ -28,12 +29,13 @@ namespace ipconverter
 
         void convert();
         bool isBinary(const std::string &ipAddr);
-        void getIpAttributes(const std::string &ip_str);
+        std::string dnsLookup(const std::string &domain);
+        void getIpAttributes(const std::string &ip_str = "");
         std::string reverseDnsLookup(const address &address);
         bool isValidDomainName(const std::string &inputString);
+        address_v4 convertToIPv4(const address_v6 &ipv6_address);
         std::string getBinaryRepresentation(const address &address);
         std::string getClass(const boost::asio::ip::address &address);
-        address_v4 convertToIPv4(const address_v6 &ipv6_address);
         address_v6 convertToIPv6Mapped(const address_v4 &ipv4_address);
         std::vector<std::string> convertToIPAddress(const std::string &hostname);
 
@@ -46,13 +48,14 @@ namespace ipconverter
             std::string _addrv4{};
             std::string _addrv6{};
             std::string _version{};
-            std::string _DnsLookUp{};
+            std::string _dnsLookUp{};
             std::string _binaryVersion{};
             std::string _reverseDnsLookup{};
         } IpInfo;
 
         IpInfo ip;
-        std::string _ipAddr;
+        std::string _uid{};
+        std::string _ipAddr{};
     };
 
 } // end namespace ipconverter

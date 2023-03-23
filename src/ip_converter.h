@@ -72,7 +72,8 @@ namespace ipconverter
 
       /// NOTE: Methods for coordinating the interactions other classes
       // void coordinator(Json::Value root, const std::string &operation);
-      void convertIPAddress(Json::Value root);
+      void convertIPAddress(const std::string &uid, Json::Value root);
+
       void performGeolocationLookup();
       void performReverseDNSLookup();
       void calculateIPAddressRange();
