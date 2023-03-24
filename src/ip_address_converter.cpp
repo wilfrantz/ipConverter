@@ -1,12 +1,17 @@
 #include <regex>
 #include <boost/bind/bind.hpp>
 #include <boost/asio/ts/socket.hpp>
+#include <boost/regex.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/asio/ip/tcp.hpp>     // Header file for TCP support
 #include <boost/asio/ip/address.hpp> // Header file for IP address support
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 
+#include <idn2.h> // for idn::toASCII (optional, requires libidn)
+#include <punycode.h>
 #include "ip_address_converter.h"
 
 using namespace boost::asio;
@@ -33,6 +38,74 @@ namespace ipconverter
     {
     }
 
+    /// @brief Get IP attributes
+    /// @param ip_str IP address in string format.
+    /// @return none.
+    void IPAddressConverter::getIpAttributes(const std::string &ip_str)
+    {
+        if (!ip_str.empty())
+            _ipAddr = ip_str;
+        if (!_ipAddr.empty())
+        {
+            if (isValidDomainName(_ipAddr))
+            {
+                ip._dnsLookUp = dnsLookup(_ipAddr);
+                try
+                {
+                    _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
+                }
+                catch (const boost::wrapexcept<boost::system::system_error> &ex)
+                {
+                    spdlog::error("DNS lookup failed: {}\n", ip._dnsLookUp);
+                    return;
+                }
+            }
+
+            boost::asio::ip::address address;
+            try
+            {
+                address = boost::asio::ip::make_address(_ipAddr);
+            }
+            catch (std::exception &e)
+            {
+                spdlog::error("Invalid IP address: {}", _ipAddr);
+                return;
+            }
+
+            ip._version = address.is_v4() ? "IPv4" : "IPv6";
+
+            if (ip._version == "IPv4")
+            {
+                ip._class = getClass(address.to_v4());
+                ip._addrv4 = address.to_v4().to_string();
+                ip._addrv6 = convertToIPv6Mapped(address.to_v4()).to_string();
+            }
+            else
+            {
+                ip._addrv4 = ""; // Leave IPv4 address empty for IPv6 addresses
+                ip._addrv6 = address.to_v6().to_string();
+            }
+
+            ip._reverseDnsLookup = reverseDnsLookup(address);
+            ip._binaryVersion = getBinaryRepresentation(address);
+
+            // Log IP attributes
+            spdlog::info("uid: {}", _uid);
+            spdlog::info("IP Address: {}", _ipAddr);
+            spdlog::info("IP Version: {}", ip._version);
+            spdlog::info("IP Class: {}", ip._class);
+            spdlog::info("IP Address v4: {}", ip._addrv4);
+            spdlog::info("IP Address v6: {}", ip._addrv6);
+            spdlog::info("IP Address Binary: {}", ip._binaryVersion);
+            spdlog::info("IP Address DNS: {}", ip._dnsLookUp);
+            spdlog::info("IP Address Reverse DNS: {}", ip._reverseDnsLookup);
+            std::cout << std::endl;
+        }
+        else
+        {
+            spdlog::error("IP address field is empty.");
+        }
+    }
     /// @brief Check if the input string is a valid binary IP address
     /// @param inputString
     /// @return true if the input string is a valid binary IP address, false otherwise
@@ -47,8 +120,44 @@ namespace ipconverter
     /// @return true if the input string is a valid domain name, false otherwise
     bool IPAddressConverter::isValidDomainName(const std::string &inputString)
     {
-        static const std::regex domainNameRegex(R"(^(?=.{1,255}$)([a-zA-Z0-9][a-zA-Z0-9_-]{0,62}[a-zA-Z0-9]\.?)+[a-zA-Z]{2,}$)");
-        return std::regex_match(inputString, domainNameRegex);
+        // Split the input string into labels
+        std::vector<std::string> labels;
+        boost::split(labels, inputString, boost::is_any_of("."));
+
+        // Check that the domain name has at least two labels
+        if (labels.size() < 2)
+        {
+            return false;
+        }
+
+        // Check that each label is valid
+        for (const auto &label : labels)
+        {
+            if (label.empty() || label.size() > 63)
+            {
+                return false;
+            }
+            if (!std::all_of(label.begin(), label.end(), [](char c)
+                             { return std::isalnum(c) || c == '-' || c == '_'; }))
+            {
+                return false;
+            }
+            if (label.front() == '-' || label.back() == '-')
+            {
+                return false;
+            }
+        }
+
+        // Check that the last label contains only letters
+        const auto &lastLabel = labels.back();
+        if (!std::all_of(lastLabel.begin(), lastLabel.end(), [](char c)
+                         { return std::isalpha(c); }))
+        {
+            return false;
+        }
+
+        // The domain name is valid
+        return true;
     }
 
     /// @brief get the binary representation of an IP address
@@ -184,75 +293,6 @@ namespace ipconverter
         catch (...)
         {
             return "DNS lookup failed";
-        }
-    }
-
-    /// @brief Get IP attributes
-    /// @param ip_str IP address in string format.
-    /// @return none.
-    void IPAddressConverter::getIpAttributes(const std::string &ip_str)
-    {
-        if (!ip_str.empty())
-            _ipAddr = ip_str;
-        if (!_ipAddr.empty())
-        {
-            if (isValidDomainName(_ipAddr))
-            {
-                ip._dnsLookUp = dnsLookup(_ipAddr);
-                try
-                {
-                    _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
-                }
-                catch (const boost::wrapexcept<boost::system::system_error> &ex)
-                {
-                    spdlog::error("DNS lookup failed: {}\n", ip._dnsLookUp);
-                    return;
-                }
-            }
-
-            boost::asio::ip::address address;
-            try
-            {
-                address = boost::asio::ip::make_address(_ipAddr);
-            }
-            catch (std::exception &e)
-            {
-                spdlog::error("Invalid IP address: {}", _ipAddr);
-                return;
-            }
-
-            ip._version = address.is_v4() ? "IPv4" : "IPv6";
-
-            if (ip._version == "IPv4")
-            {
-                ip._class = getClass(address.to_v4());
-                ip._addrv4 = address.to_v4().to_string();
-                ip._addrv6 = convertToIPv6Mapped(address.to_v4()).to_string();
-            }
-            else
-            {
-                ip._addrv4 = ""; // Leave IPv4 address empty for IPv6 addresses
-                ip._addrv6 = address.to_v6().to_string();
-            }
-
-            ip._reverseDnsLookup = reverseDnsLookup(address);
-            ip._binaryVersion = getBinaryRepresentation(address);
-
-            // Log IP attributes
-            spdlog::info("uid: {}", _uid);
-            spdlog::info("IP Address: {}", _ipAddr);
-            spdlog::info("IP Version: {}", ip._version);
-            spdlog::info("IP Class: {}", ip._class);
-            spdlog::info("IP Address v4: {}", ip._addrv4);
-            spdlog::info("IP Address v6: {}", ip._addrv6);
-            spdlog::info("IP Address Binary: {}", ip._binaryVersion);
-            spdlog::info("IP Address DNS: {}", ip._dnsLookUp);
-            spdlog::info("IP Address Reverse DNS: {}", ip._reverseDnsLookup);
-            std::cout << std::endl;
-        }
-        else
-        {
-            spdlog::error("IP address field is empty.");
         }
     }
 
