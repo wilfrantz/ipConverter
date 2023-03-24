@@ -4,6 +4,8 @@
 #include <boost/system/error_code.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/asio/ip/tcp.hpp>     // Header file for TCP support
+#include <boost/asio/ip/address.hpp> // Header file for IP address support
 
 #include "ip_address_converter.h"
 
@@ -132,16 +134,27 @@ namespace ipconverter
     {
         boost::asio::io_context io_context;
         boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::system::error_code ec;
-        auto results = resolver.resolve(domain, "", ec);
+        try
+        {
+            spdlog::info("Performing DNS lookup on {}", domain);
+            boost::system::error_code ec;
+            auto results = resolver.resolve(domain, "", ec);
 
-        if (ec || results == boost::asio::ip::tcp::resolver::iterator())
-        {
-            return "DNS lookup failed";
+            // if (ec || results == boost::asio::ip::tcp::resolver::iterator())
+            if (ec)
+            {
+                spdlog::error("DNS lookup failed: {}", ec.message());
+                return ec.message();
+            }
+            else
+            {
+                return results->endpoint().address().to_string();
+            }
         }
-        else
+        catch (const boost::wrapexcept<boost::system::system_error> &ex)
         {
-            return results->endpoint().address().to_string();
+            spdlog::error("DNS lookup failed with error: {}", ex.what());
+            return "DNS lookup failed";
         }
     }
 
@@ -153,16 +166,24 @@ namespace ipconverter
     {
         boost::asio::io_context io_context;
         boost::asio::ip::tcp::resolver resolver(io_context);
-        boost::system::error_code ec;
-        auto results = resolver.resolve(boost::asio::ip::tcp::endpoint(address, 0), ec);
+        try
+        {
+            spdlog::info("Performing reverse DNS lookup for {}", address.to_string());
+            boost::system::error_code ec;
+            auto results = resolver.resolve(boost::asio::ip::tcp::endpoint(address, 0), ec);
 
-        if (ec || results == boost::asio::ip::tcp::resolver::iterator())
+            if (ec || results == boost::asio::ip::tcp::resolver::iterator())
+            {
+                return "DNS lookup failed";
+            }
+            else
+            {
+                return results->host_name();
+            }
+        }
+        catch (...)
         {
             return "DNS lookup failed";
-        }
-        else
-        {
-            return results->host_name();
         }
     }
 
@@ -178,7 +199,15 @@ namespace ipconverter
             if (isValidDomainName(_ipAddr))
             {
                 ip._dnsLookUp = dnsLookup(_ipAddr);
-                _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
+                try
+                {
+                    _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
+                }
+                catch (const boost::wrapexcept<boost::system::system_error> &ex)
+                {
+                    spdlog::error("DNS lookup failed: {}\n", ip._dnsLookUp);
+                    return;
+                }
             }
 
             boost::asio::ip::address address;

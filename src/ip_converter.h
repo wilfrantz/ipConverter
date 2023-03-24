@@ -3,7 +3,7 @@
  * class will be responsible for handling user input and output, as well as
  * coordinating the interactions between other classes.
  * @Author: Wilfrantz Dede
- * @Date: March 23 */
+ * @Date: March 23, 20xx */
 
 #ifndef IP_CONVERTER_H
 #define IP_CONVERTER_H
@@ -22,11 +22,10 @@ namespace ipconverter
 
       std::string getVersion() const { return this->_version; }
 
-      // NOTE: Methods for handling user input and output.
-      void readUserInput(std::istream &input);
-      void displayResults();
-      // fill the result object.
+      // NOTE: To handle input and output.
       void addToResults();
+      void displayResults();
+      void readUserInput(std::istream &input);
 
       enum metricType
       {
