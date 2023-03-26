@@ -22,12 +22,11 @@ namespace ipconverter
     IPAddressConverter::IPAddressConverter() {}
     IPAddressConverter::IPAddressConverter(const std::string &uid,
                                            const std::string &ipAddr,
-                                           const std::string &ipVersion,
-                                           const std::string &ipClass,
-                                           const std::string &reverseDnsLookup,
-                                           const std::string &binaryVersion)
-        : _ipAddr(ipAddr), _uid(uid)
+                                           const std::string &operation)
+        : _uid(uid), _ipAddr(ipAddr), _operation(operation)
     {
+        dataMap["uid"] = uid;
+        dataMap["operation"] = operation;
         getIpAttributes(_ipAddr);
     }
 
@@ -43,69 +42,58 @@ namespace ipconverter
     /// @return none.
     void IPAddressConverter::getIpAttributes(const std::string &ip_str)
     {
+        spdlog::info("Getting IP attributes for: {}", ip_str);
         if (!ip_str.empty())
             _ipAddr = ip_str;
         if (!_ipAddr.empty())
         {
             if (isValidDomainName(_ipAddr))
             {
-                ip._dnsLookUp = dnsLookup(_ipAddr);
                 try
                 {
                     _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
                 }
                 catch (const boost::wrapexcept<boost::system::system_error> &ex)
                 {
-                    spdlog::error("DNS lookup failed: {}\n", ip._dnsLookUp);
-                    return;
+                    dataMap["error"] = dnsLookup(_ipAddr);
+                    spdlog::error("DNS lookup failed: {}\n", dataMap["error"]);
                 }
             }
 
-            boost::asio::ip::address address;
             try
             {
-                address = boost::asio::ip::make_address(_ipAddr);
+                // boost::asio::ip::address address;
+                address address = boost::asio::ip::make_address(_ipAddr);
+                dataMap["version"] = address.is_v4() ? "IPv4" : "IPv6";
+
+                if (dataMap["version"] == "IPv4")
+                {
+                    dataMap["class"] = getClass(address.to_v4());
+                    dataMap["addrv4"] = address.to_v4().to_string();
+                    dataMap["addrv6"] = convertToIPv6Mapped(address.to_v4()).to_string();
+                }
+                else
+                {
+                    dataMap["addrv6"] = address.to_v6().to_string();
+                }
+
+                dataMap["reverseDnsLookup"] = reverseDnsLookup(address);
+                dataMap["binaryVersion"] = getBinaryRepresentation(address);
             }
             catch (std::exception &e)
             {
                 spdlog::error("Invalid IP address: {}", _ipAddr);
-                return;
+                dataMap["error"] = "Invalid IP address";
             }
-
-            ip._version = address.is_v4() ? "IPv4" : "IPv6";
-
-            if (ip._version == "IPv4")
-            {
-                ip._class = getClass(address.to_v4());
-                ip._addrv4 = address.to_v4().to_string();
-                ip._addrv6 = convertToIPv6Mapped(address.to_v4()).to_string();
-            }
-            else
-            {
-                ip._addrv4 = ""; // Leave IPv4 address empty for IPv6 addresses
-                ip._addrv6 = address.to_v6().to_string();
-            }
-
-            ip._reverseDnsLookup = reverseDnsLookup(address);
-            ip._binaryVersion = getBinaryRepresentation(address);
-
-            // Log IP attributes
-            spdlog::info("uid: {}", _uid);
-            spdlog::info("IP Address: {}", _ipAddr);
-            spdlog::info("IP Version: {}", ip._version);
-            spdlog::info("IP Class: {}", ip._class);
-            spdlog::info("IP Address v4: {}", ip._addrv4);
-            spdlog::info("IP Address v6: {}", ip._addrv6);
-            spdlog::info("IP Address Binary: {}", ip._binaryVersion);
-            spdlog::info("IP Address DNS: {}", ip._dnsLookUp);
-            spdlog::info("IP Address Reverse DNS: {}", ip._reverseDnsLookup);
-            std::cout << std::endl;
         }
         else
         {
             spdlog::error("IP address field is empty.");
+            dataMap["error"] = "IP address field is empty.";
         }
+        addToResults();
     }
+
     /// @brief Check if the input string is a valid binary IP address
     /// @param inputString
     /// @return true if the input string is a valid binary IP address, false otherwise
@@ -165,7 +153,6 @@ namespace ipconverter
     /// @return binary representation of the IP address
     std::string IPAddressConverter::getBinaryRepresentation(const boost::asio::ip::address &address)
     {
-
         if (address.is_v4())
         {
             std::bitset<32> binary = address.to_v4().to_uint();
@@ -277,7 +264,7 @@ namespace ipconverter
         boost::asio::ip::tcp::resolver resolver(io_context);
         try
         {
-            spdlog::info("Performing reverse DNS lookup for {}", address.to_string());
+            spdlog::info("Performing reverse DNS lookup on {}", address.to_string());
             boost::system::error_code ec;
             auto results = resolver.resolve(boost::asio::ip::tcp::endpoint(address, 0), ec);
 
@@ -335,14 +322,43 @@ namespace ipconverter
             for (auto it = endpoints.begin(); it != endpoints.end(); ++it)
             {
                 // ip_addresses.push_back(it->endpoint().address().to_string());
-                it->endpoint().address().is_v4()   ? ip_addresses.push_back(it->endpoint().address().to_string())
-                : it->endpoint().address().is_v6() ? ip_addresses.push_back(it->endpoint().address().to_string())
-                                                   : ip_addresses.push_back("Invalid IP address");
+                if (it->endpoint().address().is_v4() || it->endpoint().address().is_v6())
+                    ip_addresses.push_back(it->endpoint().address().to_string());
+                else
+                    ip_addresses.push_back("Invalid IP address");
             }
 
             return ip_addresses;
         }
         return {};
+    }
+
+    /// @brief Adds the results to the JSON file
+    /// @param none.
+    /// @return none.
+    void IPAddressConverter::addToResults()
+    {
+        // Create a JSON object for this conversion
+        Json::Value item(Json::objectValue);
+        item["uid"] = dataMap["uid"];
+        dataMap.erase("uid");
+        item["operation"] = dataMap["operation"];
+        dataMap.erase("operation");
+
+        // Create a JSON array for the data
+        Json::Value dataArray(Json::arrayValue);
+        Json::Value dataItem(Json::objectValue);
+
+        // add key-value pairs to data array
+        for (const auto &kv : dataMap)
+        {
+            dataItem[kv.first] = kv.second;
+        }
+        dataArray.append(dataItem);
+
+        // Add the data array to the item object
+        item["data"] = dataArray;
+        converter.addToResults(item);
     }
 
 } // end namespace ipconverter

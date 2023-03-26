@@ -6,6 +6,7 @@
 
 namespace ipconverter
 {
+    std::vector<Json::Value> IPConverter::_results;
 
     /* @brief Read user input from a given input stream, parse
      * it as JSON, and perform the specified operations.
@@ -23,7 +24,7 @@ namespace ipconverter
      */
     void IPConverter::readUserInput(std::istream &input)
     {
-        spdlog::info("[readUserInput()]: Loading data from stdin.\n");
+        spdlog::info("[readUserInput]: Loading data from stdin.\n");
         Json::Value root;
         input >> root;
 
@@ -36,7 +37,7 @@ namespace ipconverter
             switch (metricTypeMap[operation])
             {
             case metricType::IP_ADDRESS_CONVERSION:
-                convertIPAddress(uid, root[index]);
+                convertIPAddress(uid, root[index], operation);
                 break;
             case metricType::DOMAIN_NAME:
                 performDNSLookup();
@@ -54,7 +55,7 @@ namespace ipconverter
                 convertIPType();
                 break;
             case metricType::IP_VERSION:
-                convertIPAddress(uid, root[index]);
+                convertIPAddress(uid, root[index], operation);
                 break;
             case metricType::IP_CLASS:
                 identifyNetworkClass();
@@ -96,29 +97,50 @@ namespace ipconverter
         }
     }
 
-    void IPConverter::addToResults() {}
+    void IPConverter::addToResults(Json::Value &item)
+    {
+        _results.push_back(item);
+    }
 
-    void IPConverter::displayResults() {}
+    /// @brief Display the results of the conversion process.
+    /// @param none.
+    /// @return none.
+    void IPConverter::displayResults()
+    {
+        spdlog::set_level(spdlog::level::debug);
+        spdlog::info("[displayResults]: Displaying results.");
+        if (_results.empty())
+        {
+            spdlog::warn("No results to display.");
+            return;
+        }
+        for (const auto &result : _results)
+        {
+            spdlog::info("Result: {}", result.toStyledString());
+        }
+    }
 
     /// @brief Convert IP addresses from a JSON object and instantiate
     /// IPAddressConverter objects for each IP address.
     /// @param uid A unique identifier for the conversion process.
     /// @param root The JSON object containing the IP addresses and optional fields.
-    void IPConverter::convertIPAddress(const std::string &uid, Json::Value root)
+    void IPConverter::convertIPAddress(const std::string &uid,
+                                       Json::Value root,
+                                       const std::string &operation)
     {
         spdlog::info("[Operation]: {}.", root["operation"].asString());
         const unsigned int dataSize = root["data"].size();
         for (unsigned int index = 0; index < dataSize; ++index)
         {
             const std::string &ipAddress(root["data"][index]["ip_address"].asString());
+            const std::string &operation(root["operation"].asString());
             // Optional fields.
             const std::string &ipClass(root["data"][index].get("class", "").asString());
             const std::string &binary(root["data"][index].get("binary", "").asString());
             const std::string &version(root["data"][index].get("version", "").asString());
             const std::string &reverseDns(root["data"][index].get("reverseDns", "").asString());
 
-            spdlog::info("Processing: {}\n", ipAddress);
-            IPAddressConverter converter(uid, ipAddress, version, ipClass, reverseDns, binary);
+            IPAddressConverter converter(uid, ipAddress, operation);
         }
     }
 

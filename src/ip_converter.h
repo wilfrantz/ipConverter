@@ -14,7 +14,6 @@
 
 namespace ipconverter
 {
-
    class IPConverter
    {
    public:
@@ -22,10 +21,10 @@ namespace ipconverter
 
       std::string getVersion() const { return this->_version; }
 
-      // NOTE: To handle input and output.
-      void addToResults();
       void displayResults();
+      void addToResults(Json::Value &item);
       void readUserInput(std::istream &input);
+      std::string getFile() const { return this->_filePath; }
 
       enum metricType
       {
@@ -71,7 +70,9 @@ namespace ipconverter
 
       /// NOTE: Methods for coordinating the interactions other classes
       // void coordinator(Json::Value root, const std::string &operation);
-      void convertIPAddress(const std::string &uid, Json::Value root);
+      void convertIPAddress(const std::string &uid,
+                            Json::Value root,
+                            const std::string &opeartion);
 
       void performGeolocationLookup();
       void performReverseDNSLookup();
@@ -90,9 +91,17 @@ namespace ipconverter
 
       ~IPConverter() = default;
 
+   protected:
+      static std::vector<Json::Value> _results;
+
    private:
-      // For storing user input and other data.
       std::string _version = "v1.0.0";
+      std::string _dirName = "results";
+      std::string _filename = "results.json";
+      static std::shared_ptr<spdlog::logger> _logger;
+      std::filesystem::path _path = std::filesystem::current_path();
+      const std::string _filePath = (_path / _dirName / _filename).string();
+
       std::string _subnetMask;
       std::string _startingIPAddress;
       std::string _endingIPAddress;
@@ -104,6 +113,7 @@ namespace ipconverter
       friend class IPConverterTest;
 #endif
    };
+
 } // end namespace ipconverter
 
 #endif // IP_CONVERTER_H
