@@ -21,9 +21,10 @@ namespace ipconverter
 {
     IPAddressConverter::IPAddressConverter() {}
     IPAddressConverter::IPAddressConverter(const std::string &uid,
+                                           const std::string &metric,
                                            const std::string &ipAddr,
                                            const std::string &operation)
-        : _uid(uid), _ipAddr(ipAddr), _operation(operation)
+        : _uid(uid), _ipAddr(ipAddr), _metric(metric)
     {
         dataMap["uid"] = uid;
         dataMap["operation"] = operation;
@@ -52,11 +53,12 @@ namespace ipconverter
                 try
                 {
                     _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
+                    dataMap["dnsLookup"] = dnsLookup(_ipAddr);
                 }
                 catch (const boost::wrapexcept<boost::system::system_error> &ex)
                 {
-                    dataMap["error"] = dnsLookup(_ipAddr);
-                    spdlog::error("DNS lookup failed: {}\n", dataMap["error"]);
+                    dataMap[_metric] = dnsLookup(_ipAddr);
+                    spdlog::error("DNS lookup failed: {}\n", dataMap[_metric]);
                 }
             }
 
@@ -78,18 +80,18 @@ namespace ipconverter
                 }
 
                 dataMap["reverseDnsLookup"] = reverseDnsLookup(address);
-                dataMap["binaryVersion"] = getBinaryRepresentation(address);
+                dataMap["binary"] = getBinaryRepresentation(address);
             }
             catch (std::exception &e)
             {
                 spdlog::error("Invalid IP address: {}", _ipAddr);
-                dataMap["error"] = "Invalid IP address";
+                dataMap[_metric] = "Invalid IP address";
             }
         }
         else
         {
             spdlog::error("IP address field is empty.");
-            dataMap["error"] = "IP address field is empty.";
+            dataMap[_metric] = "IP address field is empty.";
         }
         addToResults();
     }
@@ -108,9 +110,21 @@ namespace ipconverter
     /// @return true if the input string is a valid domain name, false otherwise
     bool IPAddressConverter::isValidDomainName(const std::string &inputString)
     {
+        // Check that the input string is not empty
+        if (inputString.empty())
+        {
+            return false;
+        }
+
+        // Convert the input string to lowercase
+        std::string lowerInputString;
+        std::transform(inputString.begin(), inputString.end(), std::back_inserter(lowerInputString),
+                       [](unsigned char c)
+                       { return std::tolower(c); });
+
         // Split the input string into labels
         std::vector<std::string> labels;
-        boost::split(labels, inputString, boost::is_any_of("."));
+        boost::split(labels, lowerInputString, boost::is_any_of("."));
 
         // Check that the domain name has at least two labels
         if (labels.size() < 2)
@@ -333,7 +347,7 @@ namespace ipconverter
         return {};
     }
 
-    /// @brief Adds the results to the JSON file
+    /// @brief Adds the results to the result JSON object
     /// @param none.
     /// @return none.
     void IPAddressConverter::addToResults()
@@ -349,11 +363,16 @@ namespace ipconverter
         Json::Value dataArray(Json::arrayValue);
         Json::Value dataItem(Json::objectValue);
 
+        spdlog::info("Value: {}", _metric);
+
         // add key-value pairs to data array
-        for (const auto &kv : dataMap)
+        for (const auto &keyValue : dataMap)
         {
-            dataItem[kv.first] = kv.second;
+            if (keyValue.first == _metric)
+                dataItem[keyValue.first] = keyValue.second;
+            continue;
         }
+
         dataArray.append(dataItem);
 
         // Add the data array to the item object

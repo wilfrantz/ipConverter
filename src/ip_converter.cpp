@@ -108,6 +108,7 @@ namespace ipconverter
     void IPConverter::displayResults()
     {
         spdlog::set_level(spdlog::level::debug);
+        spdlog::info("");
         spdlog::info("[displayResults]: Displaying results.");
         if (_results.empty())
         {
@@ -132,15 +133,29 @@ namespace ipconverter
         const unsigned int dataSize = root["data"].size();
         for (unsigned int index = 0; index < dataSize; ++index)
         {
-            const std::string &ipAddress(root["data"][index]["ip_address"].asString());
+            spdlog::set_level(spdlog::level::debug);
+            const std::string &metric(root["metric"].asString());
             const std::string &operation(root["operation"].asString());
+            const std::string &ipAddress(root["data"][index]["ip_address"].asString());
             // Optional fields.
             const std::string &ipClass(root["data"][index].get("class", "").asString());
             const std::string &binary(root["data"][index].get("binary", "").asString());
             const std::string &version(root["data"][index].get("version", "").asString());
             const std::string &reverseDns(root["data"][index].get("reverseDns", "").asString());
 
-            IPAddressConverter converter(uid, ipAddress, operation);
+            if (metric.empty())
+            {
+
+                spdlog::error("Invalid input[{}]:  metric", uid);
+                continue;
+            }
+            else if (ipAddress.empty())
+            {
+                spdlog::error("Invalid input[{}]: ipAddress", uid);
+                continue;
+            }
+            else
+                IPAddressConverter converter(uid, metric, ipAddress, operation);
         }
     }
 

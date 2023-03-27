@@ -22,6 +22,7 @@ namespace ipconverter
         IPAddressConverter();
         IPConverter converter;
         IPAddressConverter(const std::string &uid,
+                           const std::string &metric,
                            const std::string &ipAddr,
                            const std::string &operation);
 
@@ -44,6 +45,7 @@ namespace ipconverter
         std::string _uid{};
         std::string _ipAddr{};
         std::string _operation{};
+        std::string _metric{};
         std::map<std::string, std::string> dataMap;
     };
 
