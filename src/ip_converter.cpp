@@ -111,6 +111,7 @@ namespace ipconverter
     /// @return none.
     void IPConverter::displayResults()
     {
+        spdlog::set_level(spdlog::level::debug);
         spdlog::info("");
         spdlog::info("[displayResults]: Displaying results.");
         if (_results.empty())
@@ -121,7 +122,6 @@ namespace ipconverter
         for (const auto &result : _results)
         {
             spdlog::info("Result: {}", result.toStyledString());
-            // _logger->debug("Result: {}", result.toStyledString());
         }
     }
 
