@@ -28,6 +28,8 @@ namespace ipconverter
 
         void convert();
         void addToResults();
+        // bool isMetricValid(const std::string_view metric);
+        bool isMetricValid(const std::string &metric);
         bool isBinary(const std::string &ipAddr);
         std::string dnsLookup(const std::string &domain);
         void getIpAttributes(const std::string &ip_str = "");
@@ -46,7 +48,8 @@ namespace ipconverter
         std::string _ipAddr{};
         std::string _operation{};
         std::string _metric{};
-        std::map<std::string, std::string> dataMap;
+        std::shared_ptr<spdlog::logger> _logger;
+        std::map<std::string, std::string> _dataMap;
     };
 
 } // end namespace ipconverter

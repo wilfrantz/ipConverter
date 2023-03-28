@@ -23,6 +23,7 @@
 #include <bits/stdc++.h>
 
 #endif
+#include <list>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -36,5 +37,6 @@
 #include <json/reader.h>
 #include <boost/asio.hpp>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #endif

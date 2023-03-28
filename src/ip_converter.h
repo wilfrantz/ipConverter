@@ -17,8 +17,14 @@ namespace ipconverter
    class IPConverter
    {
    public:
-      IPConverter() {}
-
+      IPConverter()
+      {
+         _logger = spdlog::get("console");
+         if (!_logger)
+         {
+            _logger = spdlog::stdout_color_mt("console");
+         }
+      }
       std::string getVersion() const { return this->_version; }
 
       void displayResults();
@@ -71,7 +77,7 @@ namespace ipconverter
       /// NOTE: Methods for coordinating the interactions other classes
       // void coordinator(Json::Value root, const std::string &operation);
       void convertIPAddress(const std::string &uid,
-                            Json::Value root,
+                            const Json::Value &root,
                             const std::string &opeartion);
 
       void performGeolocationLookup();

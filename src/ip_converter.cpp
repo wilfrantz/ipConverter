@@ -7,6 +7,7 @@
 namespace ipconverter
 {
     std::vector<Json::Value> IPConverter::_results;
+    std::shared_ptr<spdlog::logger> IPConverter::_logger = spdlog::stdout_color_mt("console");
 
     /* @brief Read user input from a given input stream, parse
      * it as JSON, and perform the specified operations.
@@ -91,12 +92,15 @@ namespace ipconverter
                 supportCIDRNotation();
                 break;
             default:
-                spdlog::error("Invalid operation type: {}", operation);
+                spdlog::error("Invalid operation type[{}]: {}", uid, operation);
                 break;
             }
         }
     }
 
+    /// @brief Add a JSON object to the results vector.
+    /// @param none.
+    /// @return none.
     void IPConverter::addToResults(Json::Value &item)
     {
         _results.push_back(item);
@@ -107,7 +111,6 @@ namespace ipconverter
     /// @return none.
     void IPConverter::displayResults()
     {
-        spdlog::set_level(spdlog::level::debug);
         spdlog::info("");
         spdlog::info("[displayResults]: Displaying results.");
         if (_results.empty())
@@ -118,6 +121,7 @@ namespace ipconverter
         for (const auto &result : _results)
         {
             spdlog::info("Result: {}", result.toStyledString());
+            // _logger->debug("Result: {}", result.toStyledString());
         }
     }
 
@@ -126,32 +130,26 @@ namespace ipconverter
     /// @param uid A unique identifier for the conversion process.
     /// @param root The JSON object containing the IP addresses and optional fields.
     void IPConverter::convertIPAddress(const std::string &uid,
-                                       Json::Value root,
+                                       const Json::Value &root,
                                        const std::string &operation)
     {
         spdlog::info("[Operation]: {}.", root["operation"].asString());
         const unsigned int dataSize = root["data"].size();
         for (unsigned int index = 0; index < dataSize; ++index)
         {
-            spdlog::set_level(spdlog::level::debug);
             const std::string &metric(root["metric"].asString());
             const std::string &operation(root["operation"].asString());
             const std::string &ipAddress(root["data"][index]["ip_address"].asString());
-            // Optional fields.
-            const std::string &ipClass(root["data"][index].get("class", "").asString());
-            const std::string &binary(root["data"][index].get("binary", "").asString());
-            const std::string &version(root["data"][index].get("version", "").asString());
-            const std::string &reverseDns(root["data"][index].get("reverseDns", "").asString());
 
             if (metric.empty())
             {
 
-                spdlog::error("Invalid input[{}]:  metric", uid);
+                _logger->debug("Invalid input[{}]:  metric", uid);
                 continue;
             }
             else if (ipAddress.empty())
             {
-                spdlog::error("Invalid input[{}]: ipAddress", uid);
+                _logger->debug("Invalid input[{}]: ipAddress", uid);
                 continue;
             }
             else
@@ -173,5 +171,4 @@ namespace ipconverter
     void IPConverter::calculateSubnetting() {}
     void IPConverter::performDNSLookup() {}
     void IPConverter::performMACAddressLookup() {}
-
 } // namespace ipconverter

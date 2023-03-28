@@ -26,12 +26,34 @@ namespace ipconverter
                                            const std::string &operation)
         : _uid(uid), _ipAddr(ipAddr), _metric(metric)
     {
-        dataMap["uid"] = uid;
-        dataMap["operation"] = operation;
+        _dataMap["uid"] = uid;
+        _dataMap["operation"] = operation;
+
         getIpAttributes(_ipAddr);
     }
 
-    /// @brief I am no longer sure about this function, will rework entirely.
+    /// @brief check if the input string is a valid metric
+    /// @param metric[IN] metric to check
+    /// @return true if metric is valid, false otherwise.
+    bool IPAddressConverter::isMetricValid(const std::string &metric)
+    {
+        std::vector<std::string> validMetrics = {"version", "class", "dnslookup", "binary",
+                                                 "reversednslookup", "addrv6", "addrv4"};
+
+        auto lowercaseMetric = boost::algorithm::to_lower_copy(metric);
+        auto it = std::find(validMetrics.begin(), validMetrics.end(), lowercaseMetric);
+
+        if (it == validMetrics.end())
+        {
+            spdlog::debug("Invalid metric: {}", metric);
+            _dataMap[metric] = "Invalid metric.";
+            return false;
+        }
+
+        return true;
+    }
+
+    /// @brief Idk this function, will rework entirely or not.
     /// @param none
     /// @return none
     void IPAddressConverter::convert()
@@ -43,7 +65,7 @@ namespace ipconverter
     /// @return none.
     void IPAddressConverter::getIpAttributes(const std::string &ip_str)
     {
-        spdlog::info("Getting IP attributes for: {}", ip_str);
+        spdlog::info("Getting IP attributes [{}]: {}", _uid, ip_str);
         if (!ip_str.empty())
             _ipAddr = ip_str;
         if (!_ipAddr.empty())
@@ -53,45 +75,44 @@ namespace ipconverter
                 try
                 {
                     _ipAddr = boost::algorithm::join(convertToIPAddress(_ipAddr), ".");
-                    dataMap["dnsLookup"] = dnsLookup(_ipAddr);
+                    _dataMap["dnsLookup"] = dnsLookup(_ipAddr);
                 }
                 catch (const boost::wrapexcept<boost::system::system_error> &ex)
                 {
-                    dataMap[_metric] = dnsLookup(_ipAddr);
-                    spdlog::error("DNS lookup failed: {}\n", dataMap[_metric]);
+                    _dataMap[_metric] = dnsLookup(_ipAddr);
+                    spdlog::error("DNS lookup failed: {}\n", _dataMap[_metric]);
                 }
             }
 
             try
             {
-                // boost::asio::ip::address address;
                 address address = boost::asio::ip::make_address(_ipAddr);
-                dataMap["version"] = address.is_v4() ? "IPv4" : "IPv6";
+                _dataMap["version"] = address.is_v4() ? "IPv4" : "IPv6";
 
-                if (dataMap["version"] == "IPv4")
+                if (_dataMap["version"] == "IPv4")
                 {
-                    dataMap["class"] = getClass(address.to_v4());
-                    dataMap["addrv4"] = address.to_v4().to_string();
-                    dataMap["addrv6"] = convertToIPv6Mapped(address.to_v4()).to_string();
+                    _dataMap["class"] = getClass(address.to_v4());
+                    _dataMap["addrv4"] = address.to_v4().to_string();
+                    _dataMap["addrv6"] = convertToIPv6Mapped(address.to_v4()).to_string();
                 }
                 else
                 {
-                    dataMap["addrv6"] = address.to_v6().to_string();
+                    _dataMap["addrv6"] = address.to_v6().to_string();
                 }
 
-                dataMap["reverseDnsLookup"] = reverseDnsLookup(address);
-                dataMap["binary"] = getBinaryRepresentation(address);
+                _dataMap["reverseDnsLookup"] = reverseDnsLookup(address);
+                _dataMap["binary"] = getBinaryRepresentation(address);
             }
             catch (std::exception &e)
             {
                 spdlog::error("Invalid IP address: {}", _ipAddr);
-                dataMap[_metric] = "Invalid IP address";
+                _dataMap[_metric] = "Invalid IP address";
             }
         }
         else
         {
             spdlog::error("IP address field is empty.");
-            dataMap[_metric] = "IP address field is empty.";
+            _dataMap[_metric] = "IP address field is empty.";
         }
         addToResults();
     }
@@ -352,25 +373,27 @@ namespace ipconverter
     /// @return none.
     void IPAddressConverter::addToResults()
     {
+        if (!isMetricValid(_metric))
+            _dataMap[_metric] = "Invalid metric.";
+
         // Create a JSON object for this conversion
         Json::Value item(Json::objectValue);
-        item["uid"] = dataMap["uid"];
-        dataMap.erase("uid");
-        item["operation"] = dataMap["operation"];
-        dataMap.erase("operation");
+        item["uid"] = _dataMap["uid"];
+        _dataMap.erase("uid");
+        item["operation"] = _dataMap["operation"];
+        _dataMap.erase("operation");
 
         // Create a JSON array for the data
         Json::Value dataArray(Json::arrayValue);
         Json::Value dataItem(Json::objectValue);
 
-        spdlog::info("Value: {}", _metric);
-
         // add key-value pairs to data array
-        for (const auto &keyValue : dataMap)
+        for (const auto &keyValue : _dataMap)
         {
             if (keyValue.first == _metric)
                 dataItem[keyValue.first] = keyValue.second;
-            continue;
+            else
+                continue;
         }
 
         dataArray.append(dataItem);
