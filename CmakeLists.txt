@@ -5,12 +5,18 @@ SET(CMAKE_CXX_STANDARD 17)
 
 # Find packages
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(JSONCPP jsoncpp)
+pkg_search_module(JSONCPP REQUIRED jsoncpp)
 link_libraries(${JSONCPP_LIBRARIES})
-FIND_PACKAGE(CURL REQUIRED)
 FIND_PACKAGE(spdlog REQUIRED)
+FIND_PACKAGE(jsoncpp REQUIRED)
 
-FIND_LIBRARY(FMT_LIB NAMES fmt fmtd)
+# FIND_LIBRARY(FMT_LIB NAMES fmt fmtd)
+
+if (UNIX AND NOT APPLE)
+    set(jsoncpp_DIR "/usr/lib/x86_64-linux-gnu/cmake/jsoncpp/")
+elseif (APPLE)
+    set(jsoncpp_DIR "/usr/local/opt/jsoncpp/lib/cmake/jsoncpp/")
+endif()
 
 OPTION(CMAKE_VERBOSE_MAKEFILE "Verbose Makefile" ON)
 OPTION(BUILD_TESTS "Build tests" ON)
@@ -23,16 +29,13 @@ ADD_EXECUTABLE("${PROJECT_NAME}"
   src/ip_address_converter.cpp
 )
 
-message("IDN2_LIBRARIES=${IDN2_LIBRARIES}")
-message("IDN2_INCLUDE_DIRS=${IDN2_INCLUDE_DIRS}")
-
-
 TARGET_LINK_LIBRARIES("${PROJECT_NAME}" PRIVATE
   ${CURL_LIBRARIES}
   ${BOOST_LIBRARIES}
-  ${JSONCPP_LIBRARIES}
-  ${FMT_LIB}
+  # ${JSONCPP_LIBRARIES}
+  # ${FMT_LIB}
   ${SPDLOG_LIBRARIES}
+  jsoncpp
 )
 
 TARGET_INCLUDE_DIRECTORIES("${PROJECT_NAME}"

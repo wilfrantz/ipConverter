@@ -1,14 +1,15 @@
 #include <regex>
-#include <boost/bind/bind.hpp>
-#include <boost/asio/ts/socket.hpp>
 #include <boost/regex.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/algorithm/string/join.hpp>
-#include <boost/asio/ip/tcp.hpp>     // Header file for TCP support
-#include <boost/asio/ip/address.hpp> // Header file for IP address support
+#include <boost/system/error_code.hpp>
+#include <boost/asio/ts/socket.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/asio/ip/tcp.hpp> // Header file for TCP support
+#include <boost/asio/ip/address.hpp> // Header file for IP address support
+#include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
+#include <boost/json/src.hpp>
 
 #include <idn2.h> // for idn::toASCII (optional, requires libidn)
 #include <punycode.h>
