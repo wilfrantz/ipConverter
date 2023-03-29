@@ -1,0 +1,12 @@
+[
+  {
+    "uid": "0001",
+    "operation": "IP_ADDRESS_CONVERSION",
+    "metric": "binary",
+    "data": [
+      {
+        "ip_address": "dede.dev"
+      }
+    ]
+  }
+]

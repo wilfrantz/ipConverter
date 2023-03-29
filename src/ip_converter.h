@@ -108,12 +108,12 @@ namespace ipconverter
       std::filesystem::path _path = std::filesystem::current_path();
       const std::string _filePath = (_path / _dirName / _filename).string();
 
+      int _portNumber;
+      bool _isIPAddress;
       std::string _subnetMask;
       std::string _startingIPAddress;
       std::string _endingIPAddress;
       std::string _domainName;
-      int _portNumber;
-      bool _isIPAddress;
 
 #ifdef UNIT_TEST
       friend class IPConverterTest;

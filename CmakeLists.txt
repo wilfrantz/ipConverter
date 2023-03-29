@@ -1,46 +1,35 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.26)
-PROJECT(ipconverter VERSION 0.0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.10...3.20)
+project(ipconverter VERSION 0.0.1 LANGUAGES CXX)
 
-SET(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 17)
 
 # Find packages
-find_package(PkgConfig REQUIRED)
-pkg_search_module(JSONCPP REQUIRED jsoncpp)
-link_libraries(${JSONCPP_LIBRARIES})
-FIND_PACKAGE(spdlog REQUIRED)
-FIND_PACKAGE(jsoncpp REQUIRED)
+# find_package(PkgConfig REQUIRED)
+# pkg_search_module(JSONCPP REQUIRED jsoncpp)
+find_package(spdlog REQUIRED)
+find_package(fmt_LIBRARIES NAMES fmt fmtd)
+find_library(JSONCPP_LIBRARIES NAMES jsoncpp)
+find_package(Boost REQUIRED COMPONENTS system thread)
 
-# FIND_LIBRARY(FMT_LIB NAMES fmt fmtd)
+option(CMAKE_VERBOSE_MAKEFILE "Verbose Makefile" ON)
+option(BUILD_TESTS "Build tests" ON)
 
-if (UNIX AND NOT APPLE)
-    set(jsoncpp_DIR "/usr/lib/x86_64-linux-gnu/cmake/jsoncpp/")
-elseif (APPLE)
-    set(jsoncpp_DIR "/usr/local/opt/jsoncpp/lib/cmake/jsoncpp/")
-endif()
+add_compile_definitions(ENGINE_VERSION="${PROJECT_VERSION}")
 
-OPTION(CMAKE_VERBOSE_MAKEFILE "Verbose Makefile" ON)
-OPTION(BUILD_TESTS "Build tests" ON)
-
-ADD_COMPILE_DEFINITIONS(ENGINE_VERSION="${PROJECT_VERSION}")
-
-ADD_EXECUTABLE("${PROJECT_NAME}"
+add_executable("${PROJECT_NAME}"
   src/main.cpp
   src/ip_converter.cpp
   src/ip_address_converter.cpp
 )
 
-TARGET_LINK_LIBRARIES("${PROJECT_NAME}" PRIVATE
+target_link_libraries("${PROJECT_NAME}" PRIVATE
+  # ${fmt_LIBRARIES}
+  fmt::fmt
   ${CURL_LIBRARIES}
-  ${BOOST_LIBRARIES}
+  ${Boost_LIBRARIES}
+  ${spdlog_LIBRARIES}
   # ${JSONCPP_LIBRARIES}
-  # ${FMT_LIB}
-  ${SPDLOG_LIBRARIES}
-  jsoncpp
-)
-
-TARGET_INCLUDE_DIRECTORIES("${PROJECT_NAME}"
-  PRIVATE
-  ${JSONCPP_INCLUDE_DIRS}
+  /usr/local/Cellar/jsoncpp/1.9.5/lib/libjsoncpp.dylib
 )
 
 # IF (BUILD_TESTS)

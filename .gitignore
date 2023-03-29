@@ -1,3 +1,7 @@
+.git
+.gitignore
 doc/
 build/
 .vscode/
+result/
+results/
